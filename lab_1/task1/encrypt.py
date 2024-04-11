@@ -2,6 +2,7 @@ import logging
 import os
 
 from sys import argv
+
 from constants import ALPHABET, PATHS
 from file_work import json_reader, txt_reader, txt_writer, json_writer
 
@@ -12,9 +13,9 @@ logging.basicConfig(level=logging.INFO)
 def encryption(shift: int, path: str) -> str:
     """
     Encrypt text using Caesar algorithm
-    :param shift:
-    :param path:
-    :return:
+    :param shift: number shift for every letter of the string
+    :param path: path of the input file
+    :return: encrypted string shift every letter on input number of shift
     """
 
     encrypted = ""
@@ -33,12 +34,12 @@ def encryption(shift: int, path: str) -> str:
 def write_result(input_text: str, shift: int, path_encrypt: str, path_key: str, path_input: str) -> None:
     """
     Write encrypted text and keyword in file
-    :param input_text:
-    :param shift:
-    :param path_input:
-    :param path_key:
-    :param path_encrypt:
-    :return:
+    :param input_text: string input text
+    :param shift: number shift for every letter of the string
+    :param path_input: path of the file with input text
+    :param path_key: path of the file with a key
+    :param path_encrypt: path of the file with encrypted text
+    :return: None
     """
     try:
         txt_writer(path_encrypt, encryption(shift, path_input))

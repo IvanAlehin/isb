@@ -3,18 +3,18 @@ import os
 
 from collections import Counter
 
-from constants import arr_encrypt_letters, PATHS
+from constants import ARR_ENCRYPTED_LETTERS, PATHS
 from file_work import json_reader, json_writer, txt_reader, txt_writer
 
 logging.basicConfig(level=logging.INFO)
 
 
-def frequency(enc_text: str) -> list[str]:
+def count_letter(enc_text: str) -> list[str]:
     """
-    Returns list of counts of letters in descending order
+    Count number of letters in input string
 
-    :param enc_text:
-    :return:
+    :param enc_text: input encrypted text
+    :return: list of letters in descending order of frequency in encrypted text
     """
     c = Counter(enc_text)
     dict_pairs = c.most_common()
@@ -26,13 +26,13 @@ def decrypt_text(text_for_decrypt: str, arr_decrypt_letters: list[str]) -> str:
     """
     Decrypt text using frequency analysis algorithm
 
-    :param text_for_decrypt:
-    :param arr_decrypt_letters:
-    :return:
+    :param text_for_decrypt:  input encrypted text
+    :param arr_decrypt_letters: list of letters in descending order of frequency in encrypted text
+    :return: decrypted text using algorithm frequency analysis
     """
     arr_encrypt_text = []
 
-    dictionary = dict(zip(arr_decrypt_letters, arr_encrypt_letters))
+    dictionary = dict(zip(arr_decrypt_letters, ARR_ENCRYPTED_LETTERS))
     for symb in text_for_decrypt:
         arr_encrypt_text.append(dictionary[symb])
     text_for_decrypt = ''.join(arr_encrypt_text)
@@ -42,15 +42,15 @@ def decrypt_text(text_for_decrypt: str, arr_decrypt_letters: list[str]) -> str:
 def write_result(path_decrypt: str, path_key: str, path_input: str) -> None:
     """
     Write decrypted text and keys in file
-    :param path_input:
-    :param path_key:
-    :param path_decrypt:
-    :return:
+    :param path_input: path of file with input encrypted text
+    :param path_key: path of file with key
+    :param path_decrypt: path of file with decrypted text
+    :return: None
     """
     try:
-        txt_writer(path_decrypt, decrypt_text(txt_reader(path_input), frequency(txt_reader(path_input))))
+        txt_writer(path_decrypt, decrypt_text(txt_reader(path_input), count_letter(txt_reader(path_input))))
 
-        keys = dict(zip(list(frequency(txt_reader(path_input))), arr_encrypt_letters))
+        keys = dict(zip(list(count_letter(txt_reader(path_input))), ARR_ENCRYPTED_LETTERS))
 
         json_writer(path_key, keys)
     except Exception as ex:
