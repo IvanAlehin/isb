@@ -1,25 +1,29 @@
 import logging
 import os
+import sys
 
 from collections import Counter
 
 from constants import ARR_ENCRYPTED_LETTERS, PATHS
-from file_work import json_reader, json_writer, txt_reader, txt_writer
 
 logging.basicConfig(level=logging.INFO)
 
+sys.path.append(
+    os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
 
-def count_letter(enc_text: str) -> list[str]:
+from file_work import json_reader, json_writer, txt_reader, txt_writer
+
+
+def frequency(enc_text: str) -> dict:
     """
-    Count number of letters in input string
-
+    Dict of letters and frequencies in the input string
+    {"symbol": freq}
     :param enc_text: input encrypted text
-    :return: list of letters in descending order of frequency in encrypted text
+    :return: dict of letters in descending order of frequency in encrypted text
     """
     c = Counter(enc_text)
     dict_pairs = c.most_common()
-
-    return [tup[0] for tup in dict_pairs]
+    return {tup[0]: tup[1] / sum(tup[1] for tup in dict_pairs) for tup in dict_pairs}
 
 
 def decrypt_text(text_for_decrypt: str, arr_decrypt_letters: list[str]) -> str:
@@ -32,7 +36,7 @@ def decrypt_text(text_for_decrypt: str, arr_decrypt_letters: list[str]) -> str:
     """
     arr_encrypt_text = []
 
-    dictionary = dict(zip(arr_decrypt_letters, ARR_ENCRYPTED_LETTERS))
+    dictionary = dict(zip(list(arr_decrypt_letters.keys()), ARR_ENCRYPTED_LETTERS))
     for symb in text_for_decrypt:
         arr_encrypt_text.append(dictionary[symb])
     text_for_decrypt = ''.join(arr_encrypt_text)
@@ -48,9 +52,9 @@ def write_result(path_decrypt: str, path_key: str, path_input: str) -> None:
     :return: None
     """
     try:
-        txt_writer(path_decrypt, decrypt_text(txt_reader(path_input), count_letter(txt_reader(path_input))))
+        txt_writer(path_decrypt, decrypt_text(txt_reader(path_input), frequency(txt_reader(path_input))))
 
-        keys = dict(zip(list(count_letter(txt_reader(path_input))), ARR_ENCRYPTED_LETTERS))
+        keys = dict(zip(list(frequency(txt_reader(path_input))), ARR_ENCRYPTED_LETTERS))
 
         json_writer(path_key, keys)
     except Exception as ex:

@@ -1,13 +1,18 @@
 import logging
 import os
+import sys
 
 from sys import argv
 
 from constants import ALPHABET, PATHS
-from file_work import json_reader, txt_reader, txt_writer, json_writer
 
 SHIFT_NUMBER = int(argv[1])
 logging.basicConfig(level=logging.INFO)
+
+sys.path.append(
+    os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
+
+from file_work import json_reader, txt_reader, txt_writer, json_writer
 
 
 def encryption(shift: int, path: str) -> str:
