@@ -30,3 +30,4 @@ def txt_writer(path: str, input_string: str) -> None:
             f.write(input_string)
     except Exception as ex:
         logging.error(f"Incorrect path - {ex}")
+ 

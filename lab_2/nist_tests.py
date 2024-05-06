@@ -8,108 +8,92 @@ from file_work import json_reader, txt_writer
 logging.basicConfig(level=logging.DEBUG, filemode='w')
 
 
-class NistTests:
+def frequency_bitwise_test(sequence: str) -> float:
     """
-    NIST Statistical Test Suite implementation for binary sequences.
-
-    Attributes:
-        sequence (str): The binary sequence on which the tests are performed.
-        len_sequence (int): The length of the binary sequence.
-
-    Methods:
-        bitwise_frequency_test() -> float:
-            Perform the Bitwise Frequency Test and return the p-value.
-
-        consecutive_bits_test() -> float:
-            Perform the Consecutive Bits Test and return the p-value.
-
-        longest_sequence_units_test() -> float:
-            Perform the Longest Run of Ones in a Block Test and return the p-value.
+    Perform the frequency bitwise test and return the p-value.
+    :param sequence: str binary sequence
+    :return: float p-value of the test
     """
+    try:
+        
+        n = len(sequence)
+        count_ones = sequence.count('1')
+        count_zeroes = n - count_ones
 
-    def __init__(self, seq: str) -> None:
-        """
-        Initialize NistTests with params
-        :param seq: (str) input sequence of bits
-        :return None:
-        """
-        self.sequence = seq
-        self.len_sequence = len(seq)
+        s = abs(count_ones - count_zeroes) / math.sqrt(n)
 
-    def frequency_bitwise_test(self) -> float:
-        """
-        Perform the frequency bitwise test and return the p-value.
-        :return: float p-value of the test
-        """
-        try:
-            x_list = [1 if bit == '1' else -1 for bit in self.sequence]
-            sum_list = sum(x_list)
+        p_value = math.erfc(s / math.sqrt(2))
+        return p_value
+    except Exception as ex:
+        logging.error(f"Error during the test execution: {ex}\n")
 
-            s_n = math.fabs(sum_list) / math.sqrt(self.len_sequence)
+def consecutive_bits_test(sequence: str) -> float:
+    """
+    Perform the same consecutive bits test and return the p-value.
+    :param sequence: str binary sequence
+    :return: float p-value of the test
+    """
+    try:
 
-            p_value = math.erfc(s_n / math.sqrt(2))
-            return p_value
-        except Exception as ex:
-            logging.error(f"Error during the test execution: {ex}\n")
+        size_seq = len(sequence)
+        s = sequence.count('1') / size_seq
+        if not (abs(s - 0.5) < (2 / math.sqrt(size_seq))):
+            return 0.0
+        
+        v = len([i for i in range(size_seq - 1)
+                   if sequence[i] != sequence[i + 1]])
+        p_value = mpmath.erfc(abs(v - 2 * size_seq * s * (1 - s)) /
+                           (2 * math.sqrt(2 * size_seq) * s * (1 - s)))
+        return p_value
+    except Exception as ex:
+        logging.error(f"Error during the test execution: {ex}\n")
 
-    def consecutive_bits_test(self) -> float:
-        """
-        Perform the same consecutive bits test and return the p-value.
-        :return: float p-value of the test
-        """
-        try:
-            sum_list = self.sequence.count("1") / self.len_sequence
-            if abs(sum_list - 0.5) >= (2 / math.sqrt(self.len_sequence)):
-                return 0
+def longest_sequence_in_block_test(sequence: str) -> float:
+    """
+    Perform the longest run of ones in a block test and return the p-value.
+    :param sequence: str binary sequence
+    :return: float p-value of the test
+    """
+    try:
 
-            v_n = 0
-            v_n += sum(1 if self.sequence[i] != self.sequence[i + 1] else 0 for i in range(self.len_sequence - 1))
+        i_seq = list(map(int, sequence))
+        blocks = [i_seq[i:i + MAX_LENGTH_BLOCK] for i in range(0, len(i_seq), MAX_LENGTH_BLOCK)]
+        v = {1: 0, 2: 0, 3: 0, 4: 0}
+        for block in blocks:
+            max_seq = 0
+            temp_max = 0
+            for bit in block:
+                temp_max = (temp_max + 1) if bit == 1 else 0
+                max_seq = max(max_seq, temp_max)
+            match max_seq:
+                case 0 | 1:
+                    v[1] += 1
+                case 2:
+                    v[2] += 1
+                case 3:
+                    v[3] += 1
+                case 4 | 5 | 6 | 7 | 8:
+                    v[4] += 1
 
-            p_value = math.erfc(abs(v_n - 2 * self.len_sequence * sum_list * (1 - sum_list)) / (
-                    2 * math.sqrt(2 * self.len_sequence) * sum_list * (1 - sum_list)))
-            return p_value
-        except Exception as ex:
-            logging.error(f"Error during the test execution: {ex}\n")
-
-    def longest_sequence_in_block_test(self) -> float:
-        """
-        Perform the longest run of ones in a block test and return the p-value.
-        :return: float p-value of the test
-        """
-        try:
-            block_max_len = {}
-            for step in range(0, self.len_sequence, MAX_LENGTH_BLOCK):
-                block = self.sequence[step:step + MAX_LENGTH_BLOCK]
-                max_length, length = 0, 0
-                for bit in block:
-                    length = length + 1 if bit == "1" else 0
-                    max_length = max(max_length, length)
-                block_max_len[max_length] = block_max_len.get(max_length, 0) + 1
-
-            v = {1: 0, 2: 0, 3: 0, 4: 0}
-            for i in block_max_len:
-                key = min(i, 4)
-                v[key] += block_max_len[i]
-
-            xi_square = 0
-            for i in range(4):
-                xi_square += math.pow(v[i + 1] - 16 * PI[i], 2) / (16 * PI[i])
-
-            return mpmath.gammainc(3 / 2, xi_square / 2)
-        except Exception as ex:
-            logging.error(f"Error during the test execution: {ex}\n")
+        x_square = 0
+        for i in range(4):
+            x_square += math.pow(v[i + 1] - 16 * PI[i], 2) / (16 * PI[i])
+        p_value = mpmath.gammainc(3 / 2, x_square / 2)
+        return p_value
+    except Exception as ex:
+        logging.error(f"Error during the test execution: {ex}\n")
 
 
 if __name__ == "__main__":
     sequences = json_reader(SEQUENCE_PATH)
     print(sequences)
-    test_cpp = NistTests(sequences["cpp"])
-    test_java = NistTests(sequences["java"])
+    test_cpp = sequences["cpp"]
+    test_java = sequences["java"]
 
-    txt_writer(TEST_RESULTS, f'C++\n\nfrequency_bitwise_test: {NistTests.frequency_bitwise_test(test_cpp)}\n'
-                             f'consecutive_bits_test: {NistTests.consecutive_bits_test(test_cpp)}\n'
-                             f'longest_sequence_in_block_test: {NistTests.longest_sequence_in_block_test(test_cpp)}\n\n'
-                             f'Java\n\nfrequency_bitwise_test: {NistTests.frequency_bitwise_test(test_java)}\n'
-                             f'consecutive_bits_test: {NistTests.consecutive_bits_test(test_java)}\n'
-                             f'longest_sequence_in_block_test: {NistTests.longest_sequence_in_block_test(test_java)}')
+    txt_writer(TEST_RESULTS, f'C++\n\nfrequency_bitwise_test: {frequency_bitwise_test(test_cpp)}\n'
+                             f'consecutive_bits_test: {consecutive_bits_test(test_cpp)}\n'
+                             f'longest_sequence_in_block_test: {longest_sequence_in_block_test(test_cpp)}\n\n'
+                             f'Java\n\nfrequency_bitwise_test: {frequency_bitwise_test(test_java)}\n'
+                             f'consecutive_bits_test: {consecutive_bits_test(test_java)}\n'
+                             f'longest_sequence_in_block_test: {longest_sequence_in_block_test(test_java)}')
  
