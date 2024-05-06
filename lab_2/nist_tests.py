@@ -27,6 +27,7 @@ def frequency_bitwise_test(sequence: str) -> float:
     except Exception as ex:
         logging.error(f"Error during the test execution: {ex}\n")
 
+
 def consecutive_bits_test(sequence: str) -> float:
     """
     Perform the same consecutive bits test and return the p-value.
@@ -47,6 +48,7 @@ def consecutive_bits_test(sequence: str) -> float:
         return p_value
     except Exception as ex:
         logging.error(f"Error during the test execution: {ex}\n")
+
 
 def longest_sequence_in_block_test(sequence: str) -> float:
     """
