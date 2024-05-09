@@ -39,10 +39,10 @@ def consecutive_bits_test(sequence: str) -> float:
         size_seq = len(sequence)
         s = sequence.count('1') / size_seq
         if not (abs(s - 0.5) < (2 / math.sqrt(size_seq))):
-            return 0.0
+            return 0.0        
         
-        v = len([i for i in range(size_seq - 1)
-                   if sequence[i] != sequence[i + 1]])
+        v = sum(1 for i in range(size_seq - 1)
+                   if sequence[i] != sequence[i + 1])
         p_value = mpmath.erfc(abs(v - 2 * size_seq * s * (1 - s)) /
                            (2 * math.sqrt(2 * size_seq) * s * (1 - s)))
         return p_value
@@ -58,29 +58,22 @@ def longest_sequence_in_block_test(sequence: str) -> float:
     """
     try:
 
-        i_seq = list(map(int, sequence))
-        blocks = [i_seq[i:i + MAX_LENGTH_BLOCK] for i in range(0, len(i_seq), MAX_LENGTH_BLOCK)]
+        blocks = [sequence[i:i + MAX_LENGTH_BLOCK] for i in range(0, len(sequence), MAX_LENGTH_BLOCK)]
         v = {1: 0, 2: 0, 3: 0, 4: 0}
         for block in blocks:
-            max_seq = 0
-            temp_max = 0
-            for bit in block:
-                temp_max = (temp_max + 1) if bit == 1 else 0
-                max_seq = max(max_seq, temp_max)
+            max_seq = max(len(seq_ones) for seq_ones in block.split('0'))
             match max_seq:
-                case 0 | 1:
+                case max_seq if max_seq < 2:
                     v[1] += 1
                 case 2:
                     v[2] += 1
                 case 3:
                     v[3] += 1
-                case 4 | 5 | 6 | 7 | 8:
+                case max_seq if max_seq > 3:
                     v[4] += 1
 
-        x_square = 0
-        for i in range(4):
-            x_square += math.pow(v[i + 1] - 16 * PI[i], 2) / (16 * PI[i])
-        p_value = mpmath.gammainc(3 / 2, x_square / 2)
+        x = sum(math.pow(v[i + 1] - 16 * PI[i], 2) / (16 * PI[i]) for i in range(0, 4))
+        p_value = mpmath.gammainc(3 / 2, x / 2)
         return p_value
     except Exception as ex:
         logging.error(f"Error during the test execution: {ex}\n")
