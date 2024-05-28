@@ -17,7 +17,7 @@ def main():
     paths_default = FileWork(PATHS_DEFAULT)
     paths_dict = paths_default.json_reader()
     group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument('-generate_key', '--generation_keys',
+    group.add_argument('-gen_key', '--generation_keys',
                        action='store_true',
                        help='Run key generation mode.')
     group.add_argument('-enc', '--encryption',
