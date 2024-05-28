@@ -13,8 +13,8 @@ class HybridSystem:
     """
 
     def __init__(self, text_path: str, symmetric_key_path: str,
-                 encrypted_text_path: str, symmetric_obj: SymmetricAlgorithm, 
-                 asymmetric_obj: AsymmetricAlgorithm) -> None:
+                 encrypted_text_path: str, decrypted_text_path: str, 
+                 symmetric_obj: SymmetricAlgorithm, asymmetric_obj: AsymmetricAlgorithm) -> None:
         """
         Initialize HybridEncryption object with necessary paths and key length.
 
@@ -27,6 +27,7 @@ class HybridSystem:
         self.text_path = text_path
         self.symmetric_key_path = symmetric_key_path
         self.encrypted_text_path = encrypted_text_path
+        self.decrypted_text_path = decrypted_text_path
         self.symmetric_obj = symmetric_obj
         self.asymmetric_obj = asymmetric_obj
 
@@ -66,4 +67,22 @@ class HybridSystem:
             logging.info("Text successfully encrypted and written to file.")
         except Exception as ex:
             logging.error(f"An error occurred while encrypting the text: {ex}")
+ 
+    def decrypt_text(self) -> None:
+        """
+        Decrypt the text using the generated symmetric key and write it to a file.
+        """
+        try:
+            sym_key = FileWork(f"{self.symmetric_key_path[:-4]}_{self.symmetric_obj.key_len}_bit.txt")
+            symmetric_key = sym_key.deserializer()
+            symmetric_key = self.asymmetric_obj.decrypt_with_private_key(
+                self.asymmetric_obj.deserialize_private_key(), symmetric_key)
+            enc_file = FileWork(self.encrypted_text_path)
+            encrypted_text = bytes(enc_file.txt_reader("rb"))
+            decrypted_text = self.symmetric_obj.decrypt_text(symmetric_key, encrypted_text)
+            dec_file = FileWork(self.decrypted_text_path)
+            dec_file.txt_writer(decrypted_text)
+            logging.info("Text successfully decrypted and written to file.")
+        except Exception as ex:
+            logging.error(f"An error occurred while decrypting the text: {ex}")
  

@@ -54,4 +54,26 @@ class SymmetricAlgorithm:
 
         except Exception as e:
             logging.error(f"Error in encryption - {e}")
+    
+    @staticmethod
+    def decrypt_text(symmetric_key: bytes, encrypted_text: bytes) -> bytes:
+        """
+        Decrypts the text using the provided symmetric key.
+        
+        :param symmetric_key: Symmetric key.
+        :param encrypted_text: Encrypted text.
+        
+        :return: Decrypted text.
+        """
+        try:
+            iv = encrypted_text[:16]
+            encrypted_text = encrypted_text[16:]
+            cipher = Cipher(algorithms.AES(symmetric_key), modes.CBC(iv))
+            decryptor = cipher.decryptor()
+            decrypted_text = decryptor.update(encrypted_text) + decryptor.finalize()
+            unpadder = padding.PKCS7(128).unpadder()
+            return unpadder.update(decrypted_text) + unpadder.finalize()
+
+        except Exception as e:
+            logging.error(f"Error in decryption - {e}")
  

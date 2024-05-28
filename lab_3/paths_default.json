@@ -3,5 +3,6 @@
   "public_key": "asymmetric/public.pem",
   "private_key": "asymmetric/private.pem",
   "symmetric_key_file": "symmetric/key.txt",
-  "encrypted_text_file": "txt_files/encrypted_text.txt"
+  "encrypted_text_file": "txt_files/encrypted_text.txt",
+  "decrypted_text_file": "txt_files/decrypted_text.txt"
 }

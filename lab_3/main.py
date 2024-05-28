@@ -23,7 +23,10 @@ def main():
     group.add_argument('-enc', '--encryption',
                        action='store_true',
                        help='Run encryption mode.')
-    
+    group.add_argument('-dec', '--decryption',
+                       action='store_true',
+                       help='Run decryption mode.')
+
     parser.add_argument('-len', '--key_length',
                         type=int,
                         default=128,
@@ -53,7 +56,10 @@ def main():
                         type=str,
                         default=paths_dict["encrypted_text_file"],
                         help='Path of the txt file with encrypted text(default: paths_dict["encrypted_text_file"]')
-    
+    parser.add_argument('-dec_file', '--decrypted_text_path',
+                        type=str,
+                        default=paths_dict["decrypted_text_file"],
+                        help='Path of the txt file with decrypted text(default: paths_dict["decrypted_text_file"]')
 
     try:
         args = parser.parse_args()
@@ -63,12 +69,14 @@ def main():
         asymmetric_crypto = AsymmetricAlgorithm(args.private_key_path, args.public_key_path, args.key_length)
         hybrid_system = HybridSystem(args.input_text_path,
                                      args.symmetric_key_path, args.encrypted_text_path, 
-                                     symmetric_crypto, asymmetric_crypto)
+                                      args.decrypted_text_path, symmetric_crypto, asymmetric_crypto)
         match args:
             case args if args.generation_keys:
                 hybrid_system.generate_keys()
             case args if args.encryption:
                 hybrid_system.encrypt_text()
+            case args if args.decryption:
+                hybrid_system.decrypt_text()
 
     except argparse.ArgumentTypeError:
         logging.error(f"Error in arguments, key_length must be equal 128 or 192 or 256 bits")
