@@ -19,6 +19,17 @@ class FileWork:
         except Exception as ex:
             logging.error(f"Incorrect path - {ex}")
 
+    def deserializer(self) -> bytes:
+        """
+        Deserialize the key from a file.
+        :return: The deserialized key.
+        """
+        try:
+            with open(self.path, 'rb') as key_file:
+                return key_file.read()
+        except Exception as ex:
+            logging.error(f"Incorrect path - {ex}")
+
     def txt_reader(self, mode: str, encoding=None) -> str:
         """
         Read text from a file.

@@ -34,4 +34,24 @@ class SymmetricAlgorithm:
         """
         return os.urandom(self.key_len // 8)
 
+    @staticmethod
+    def encrypt_text(symmetric_key: bytes, text: bytes) -> bytes:
+        """
+        Encrypts the text using the provided symmetric key.
+        
+        :param symmetric_key: Symmetric key.
+        :param text: Text to encrypt.
+        
+        :return: Encrypted text.
+        """
+        try:
+            iv = os.urandom(16)
+            cipher = Cipher(algorithms.AES(symmetric_key), modes.CBC(iv))
+            encryptor = cipher.encryptor()
+            padder = padding.PKCS7(128).padder()
+            padded_text = padder.update(text) + padder.finalize()
+            return iv + encryptor.update(padded_text) + encryptor.finalize()
+
+        except Exception as e:
+            logging.error(f"Error in encryption - {e}")
  

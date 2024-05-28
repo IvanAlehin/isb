@@ -53,7 +53,7 @@ class AsymmetricAlgorithm:
                                                          encryption_algorithm=serialization.NoEncryption()))
         except Exception as e:
             logging.error(f"Error in serializing private key - {e}")
-
+    
     def serialize_public_key(self, public_key: rsa.RSAPublicKey) -> None:
         """
         Serialize the public key and save it to a file.
@@ -64,6 +64,30 @@ class AsymmetricAlgorithm:
             with open(self.public_key_path, 'wb') as key_file:
                 key_file.write(public_key.public_bytes(encoding=serialization.Encoding.PEM,
                                                        format=serialization.PublicFormat.SubjectPublicKeyInfo))
+        except Exception as e:
+            logging.error(f"Error in serializing public key - {e}")
+    
+    def deserialize_private_key(self) -> rsa.RSAPrivateKey:
+        """
+        Deserialize the private key and return it.
+        
+        :return: The deserialized private key.
+        """
+        try:
+            with open(self.private_key_path, 'rb') as key_file:
+                return serialization.load_pem_private_key(key_file.read(), password=None)
+        except Exception as e:
+            logging.error(f"Error in deserializing private key - {e}")
+
+    def deserialize_public_key(self) -> rsa.RSAPublicKey:
+        """
+        Deserialize the public key and return it.
+        
+        :return: The deserialized public key.
+        """
+        try:
+            with open(self.public_key_path, 'rb') as key_file:
+                return serialization.load_pem_public_key(key_file.read())
         except Exception as e:
             logging.error(f"Error in serializing public key - {e}")
 
@@ -79,4 +103,16 @@ class AsymmetricAlgorithm:
         """
         return public_key.encrypt(text, padding.OAEP(mgf=padding.MGF1(algorithm=hashes.SHA256()),
                                                      algorithm=hashes.SHA256(), label=None))
-  
+    
+    @staticmethod
+    def decrypt_with_private_key(private_key: rsa.RSAPrivateKey, ciphertext: bytes) -> bytes:
+        """
+        Decrypts ciphertext using the provided private key.
+
+        :param private_key: The RSA private key used for decryption.
+        :param ciphertext: The ciphertext to be decrypted.
+
+        :return: The text produced by the decryption process.
+        """
+        return private_key.decrypt(ciphertext, padding.OAEP(mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                                                            algorithm=hashes.SHA256(), label=None))

@@ -8,12 +8,9 @@ from asymmetric_algorithm import AsymmetricAlgorithm
 from symmetric_algorithm import SymmetricAlgorithm
 from hybrid_system import HybridSystem
 from file_work import FileWork
+from constants import PATHS_DEFAULT
 
-load_dotenv()
 logging.basicConfig(level=logging.INFO)
-
-PATHS_DEFAULT = os.environ.get('PATHS_DEFAULT')
-
 
 def main():
     parser = argparse.ArgumentParser(description="Entry point of the program")
@@ -23,13 +20,16 @@ def main():
     group.add_argument('-generate_key', '--generation_keys',
                        action='store_true',
                        help='Run key generation mode.')
-
+    group.add_argument('-enc', '--encryption',
+                       action='store_true',
+                       help='Run encryption mode.')
+    
     parser.add_argument('-len', '--key_length',
                         type=int,
                         default=128,
                         help='Length of the symmetric key in bits (default: 128).')
 
-    parser.add_argument('-text_file', '--input_text_file',
+    parser.add_argument('-text_file', '--input_text_path',
                         type=str,
                         default=paths_dict["text_file"],
                         help='Path of the input txt file with text(default: paths_dict["text_file"]')
@@ -48,7 +48,11 @@ def main():
                         type=str,
                         default=paths_dict["symmetric_key_file"],
                         help='Path of the symmetric txt file with key(default: paths_dict["symmetric_key_file"]')
-
+    
+    parser.add_argument('-enc_file', '--encrypted_text_path',
+                        type=str,
+                        default=paths_dict["encrypted_text_file"],
+                        help='Path of the txt file with encrypted text(default: paths_dict["encrypted_text_file"]')
     
 
     try:
@@ -57,11 +61,14 @@ def main():
             raise argparse.ArgumentTypeError
         symmetric_crypto = SymmetricAlgorithm(args.key_length)
         asymmetric_crypto = AsymmetricAlgorithm(args.private_key_path, args.public_key_path, args.key_length)
-        hybrid_system = HybridSystem(args.input_text_file,
-                                     args.symmetric_key_path, symmetric_crypto, asymmetric_crypto)
+        hybrid_system = HybridSystem(args.input_text_path,
+                                     args.symmetric_key_path, args.encrypted_text_path, 
+                                     symmetric_crypto, asymmetric_crypto)
         match args:
             case args if args.generation_keys:
                 hybrid_system.generate_keys()
+            case args if args.encryption:
+                hybrid_system.encrypt_text()
 
     except argparse.ArgumentTypeError:
         logging.error(f"Error in arguments, key_length must be equal 128 or 192 or 256 bits")
