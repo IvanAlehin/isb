@@ -39,8 +39,10 @@ class HybridSystem:
             symmetric_key = self.symmetric_obj.generate_key()
             private_key, public_key = self.asymmetric_obj.generate_key(2048)
 
-            self.asymmetric_obj.serialize_private_key(private_key)
-            self.asymmetric_obj.serialize_public_key(public_key)
+            private_key_obj = FileWork(self.asymmetric_obj.private_key_path)
+            public_key_obj = FileWork(self.asymmetric_obj.public_key_path)
+            private_key_obj.serialize_private_key(private_key)
+            public_key_obj.serialize_public_key(public_key)
 
             encrypted_symmetric_key = self.asymmetric_obj.encrypt_with_public_key(public_key, symmetric_key)
             key = FileWork(f"{self.symmetric_key_path[:-4]}_{self.symmetric_obj.key_len}_bit.txt")
@@ -57,8 +59,9 @@ class HybridSystem:
         try:
             key = FileWork(f"{self.symmetric_key_path[:-4]}_{self.symmetric_obj.key_len}_bit.txt")
             symmetric_key = key.deserializer()
+            private_key_obj = FileWork(self.asymmetric_obj.private_key_path)
             symmetric_key = self.asymmetric_obj.decrypt_with_private_key(
-                self.asymmetric_obj.deserialize_private_key(), symmetric_key)
+                private_key_obj.deserialize_private_key(), symmetric_key)
             text_file = FileWork(self.text_path)
             plaintext = bytes(text_file.txt_reader("r", "UTF-8"), "UTF-8")
             encrypted_text = self.symmetric_obj.encrypt_text(symmetric_key, plaintext)
@@ -75,8 +78,9 @@ class HybridSystem:
         try:
             sym_key = FileWork(f"{self.symmetric_key_path[:-4]}_{self.symmetric_obj.key_len}_bit.txt")
             symmetric_key = sym_key.deserializer()
+            private_key_obj = FileWork(self.asymmetric_obj.private_key_path)
             symmetric_key = self.asymmetric_obj.decrypt_with_private_key(
-                self.asymmetric_obj.deserialize_private_key(), symmetric_key)
+                private_key_obj.deserialize_private_key(), symmetric_key)
             enc_file = FileWork(self.encrypted_text_path)
             encrypted_text = bytes(enc_file.txt_reader("rb"))
             decrypted_text = self.symmetric_obj.decrypt_text(symmetric_key, encrypted_text)

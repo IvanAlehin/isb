@@ -1,8 +1,5 @@
 import argparse
 import logging
-import os
-
-from dotenv import load_dotenv
 
 from asymmetric_algorithm import AsymmetricAlgorithm
 from symmetric_algorithm import SymmetricAlgorithm
