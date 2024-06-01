@@ -16,6 +16,10 @@ class FileWork:
         None
     """
     def __init__(self, path: str) -> None:
+        """
+        Initialize FileWork object with path.
+        :param path: Path to file.
+        """
         self.path = path
 
     def serializer(self, key: bytes) -> None:
